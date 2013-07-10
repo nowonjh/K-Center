@@ -1,0 +1,95 @@
+<project name="Knowledge Center" default="mkwar">
+<property environment="env"/>
+<property name="base.dir" value="."/>
+<property name="dist.dir" value="dist"/>
+<property name="build.dir" value="WEB-INF/classes"/>
+<property name="src.dir" value="WEB-INF/src"/>
+<property name="lib.dir" value="WEB-INF/lib"/>
+<property name="doc.dir" value="doc/api"/>
+<property name="war.file" value="ROOT.war"/>
+	
+<target name="clean">
+	<delete dir="${dist.dir}"/>
+	<delete dir="${build.dir}"/>
+</target>
+	
+<target name="compile" depends="clean">
+	<echo message="${env.CATALINA_HOME}"/>
+	<mkdir dir="${build.dir}"/>
+	<javac debug="on" deprecation="off" srcdir="${src.dir}" destdir="${build.dir}" 
+		includeantruntime="false" fork="yes" encoding="UTF-8">
+		<classpath>
+			<pathelement location="${lib.dir}"/>
+			<fileset dir="${lib.dir}" includes="*.jar"/>
+		</classpath>
+		
+		<classpath>
+			<pathelement location="${env.CATALINA_HOME}/lib"/>
+			<fileset dir="${env.CATALINA_HOME}/lib" includes="*.jar"/>
+		</classpath>
+		
+	</javac>
+	<!--
+    <copy todir="${build.dir}/properties">
+    	<fileset dir="${src.dir}/properties"/>
+    </copy>
+    -->
+</target>
+	
+<target name="mkwar" depends="compile">
+	<mkdir dir="${dist.dir}"/>
+	<war destfile="${dist.dir}/${war.file}" webxml="WEB-INF/web.xml">		
+		<fileset dir=".">
+			<exclude name=".*"/>
+			<exclude name="build.xml"/>
+			<exclude name="work/**/*"/>
+			<exclude name="work"/>
+			<exclude name="doc/**/*"/>
+			<exclude name="doc"/>
+			<exclude name="bin"/>
+			<exclude name="src"/>
+			<exclude name="dist"/>
+			<exclude name="WEB-INF/web.xml"/>
+			<exclude name="WEB-INF/src/**/*"/>
+		</fileset>
+	</war>
+</target>
+
+<target name="javadocs" depends="mkwar">
+	<delete dir="${doc.dir}"/>
+	<mkdir dir="${doc.dir}"/>
+	<javadoc packagenames="com.*" sourcepath="${src.dir}" destdir="${doc.dir}" private="true" 
+		charset="UTF-8" encoding="UTF-8" windowtitle="Knowledge Center API">
+		<classpath>
+			<pathelement location="${lib.dir}"/>
+			<fileset dir="${lib.dir}" includes="*.jar"/>
+		</classpath>
+		<classpath>
+			<pathelement location="${env.CATALINA_HOME}/lib"/>
+			<fileset dir="${env.CATALINA_HOME}/lib" includes="*.jar"/>
+		</classpath>
+		<group title="Knowledge Center packages" packages="com.igloosec.kc.*"/>
+		<doctitle><![CDATA[<h1>Knowledge Center API v2.0</h1>]]></doctitle>
+		<bottom><![CDATA[<i>Copyright &#169; 2012 IGLOO Security Inc. All Rights Reserved.</i>]]></bottom>
+	</javadoc>
+</target>
+	
+<target name="upload" depends="mkwar" unless="is.localhost">
+	<property name="ftp.server" value="192.168.9.150"/>
+	<property name="ftp.port" value="22"/>
+	<property name="ftp.userid" value="root"/>
+	<property name="ftp.passwd" value="qazwsxedc"/>
+	<property name="ftp.remotedir" value="/opt/k-center/"/>
+	<echo>connecting to ${ftp.server} into ${ftp.remotedir}</echo>
+	<ftp server="${ftp.server}" port="${ftp.port}"
+		userid="${ftp.userid}" password="${ftp.passwd}"
+		remotedir="${ftp.remotedir}" depends="true"
+		verbose="true" passive="true" binary="true"
+		ignoreNoncriticalErrors="true">
+		<fileset dir="${dist.dir}">
+			<include name="${war.file}"/>
+		</fileset>
+	</ftp>
+</target>
+
+</project>
