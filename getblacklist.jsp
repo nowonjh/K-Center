@@ -35,8 +35,6 @@
 		String filters = CommonUtil.reqFilter(request.getParameter("filters"));
 		JSONObject search_json = (JSONObject) JSONValue.parse(filters);
 		
-		logger.debug(search_json.get("groupOp"));
-		
 		List<Map<String, String>> list = (List<Map<String, String>>) search_json.get("rules");
 		
 		int index = 0;

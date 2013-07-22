@@ -119,7 +119,6 @@ public class PDFExport {
 							index++;
 						} catch (Exception e){
 							exception_list.add(col[0]);
-							logger.warn(e.getMessage());
 							index++;
 						}
 						
